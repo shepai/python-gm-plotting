@@ -39,18 +39,13 @@ class APIClient:
         return tuple(details[0]['geometry']['location'].values())
 
     def get_satellite_image(self, gps_coords, zoom=15):
-        filename = f'image_zoom{zoom}_coords{gps_coords[0]:.8f}_{gps_coords[1]:.8f}.png'
-        filepath = os.path.join(self.cache_path, filename)
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-
-        if not os.path.exists(filepath):
-            with open(filepath, 'wb') as file:
-                for data in self.client.static_map(
+        with TemporaryFile() as file:
+            for data in self.client.static_map(
                         size=(640, 640),
-                        center=gps_coords, zoom=zoom, maptype='satellite'):
+                        center=gps_coords, zoom=zoom, maptype='satellite',format="png"):
                     file.write(data)
-
-        return PIL.Image.open(filepath)
+            f=np.array(PIL.Image.open(file))
+            return f
 
     def add_satellite_image_background(self, ax):
         xlim = ax.get_xlim()
@@ -69,7 +64,7 @@ class APIClient:
         # Get satellite image for these coordinates
         centre_gps = coords.merc_to_gps(mlat, mlon)
         img = self.get_satellite_image(centre_gps, zoom=zoom)
-
+ 
         # Calculate boundaries for background image
         extent = (mlon - mframe, mlon + mframe, mlat + mframe, mlat - mframe)
         ax.imshow(img, extent=extent, zorder=-np.inf)
