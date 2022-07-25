@@ -10,6 +10,7 @@ def serial_ports():
         Read the all ports that are open for serial communication
         @returns array of COMS avaliable
         """
+
         if sys.platform.startswith('win'):
             ports = ['COM%s' % (i + 1) for i in range(256)]
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
@@ -26,7 +27,7 @@ def serial_ports():
                 s = serial.Serial(port)
                 s.close()
                 result.append(port)
-            except (OSError, serial.SerialException):
+            except:
                 pass
         return result
     
@@ -42,13 +43,16 @@ def converter_B(cord):
     minutes=float(cord[3:9]) #MM.MMMM
     decimal = degrees + (minutes/60)
     return decimal
-
+ser=None
 con=False
 while not con: #loop till connection established
     try:
         print(serial_ports())
-        serial=input("Enter your serial port: ")
-        ser=serial.Serial(serial)
+        s=input("Enter your serial port: ")
+        ser=serial.Serial(s)
+        con=True
+    except KeyboardInterrupt:
+        exit()
     except:
         pass
     
