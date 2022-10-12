@@ -45,13 +45,20 @@ def converter_B(cord):
     return decimal
 
 con=False
-while not con: #loop till connection established
-    try:
-        print(serial_ports())
-        serial=input("Enter your serial port: ")
-        ser=serial.Serial(serial)
-    except:
-        pass
+try:
+        ser=serial.Serial('COM44')
+except:
+        while not con: #loop till connection established
+            try:
+                print(serial_ports())
+                if len(serial_ports)==1:
+                        ser=serial.Serial(serial_ports[0])
+                else:
+                        serial=input("Enter your serial port: ")
+                        ser=serial.Serial(serial)
+                con=True
+            except:
+                pass
     
 ser.baudrate=4800
 name=input("What would you like to name your file? ")
@@ -62,7 +69,9 @@ while True:
     try:     
         message = ser.readline().decode() 
         message = message.strip()
-        if '$GNGGA' in message:    
+        if '$GNGGA' in message:
+                print(message.split(",")[6])
+                print(message)
                 gpgga = nmea.GPGGA()
                 gpgga.parse(message)   
                 lat = float(gpgga.latitude)
@@ -86,7 +95,10 @@ while True:
                     f1.write(message+"\n")
 
     except KeyboardInterrupt:
-        raise
+        f.close()
+        f1.close()
+        ser.close()
+        pass
 f.close()
 f1.close()
 ser.close()
